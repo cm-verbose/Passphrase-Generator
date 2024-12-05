@@ -4,4 +4,8 @@
     "java.project.referencedLibraries": [
         "lib/**/*.jar"
     ],
+    "editor.tokenColorCustomizations": {
+        "comments": "",
+        "textMateRules": []
+    },
 }

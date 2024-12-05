@@ -75,6 +75,8 @@ public class Generateur {
    * Affiche le menu de l'application
    */
   private static void afficherMenu() {
+
+    // Le contenu littéral du rectangle
     String[] optionsMenu = {
         "",
         "     Menu",

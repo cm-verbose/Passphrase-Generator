@@ -34,6 +34,7 @@ public class Graphiques {
 
     // Haut
     rectangle.append(COIN_SUPERIEUR_GAUCHE + ligneHorizontale + COIN_SUPERIEUR_DROIT + '\n');
+
     // Centre
     if (estCentre) {
       final int nombreInsertions = ((largeur - texte.length()) - 2) / 2;

@@ -5,96 +5,94 @@ package Interface;
  * terminal
  */
 public class Graphiques {
-  /*
-   * Symboles spéciaux
-   */
-  private static char COIN_SUPERIEUR_GAUCHE = '\u250c';
-  private static char COIN_SUPERIEUR_DROIT = '\u2510';
-  private static char COIN_INFERIEUR_GAUCHE = '\u2514';
-  private static char COIN_INFERIEUR_DROIT = '\u2518';
-  private static char LIGNE_HORIZONTALE = '\u2500';
-  private static char LIGNE_VERTICALE = '\u2502';
+  private static byte largeurTitre = 34;
+  private static byte longeurEnTeteMenu = 35;
 
   /**
-   * Construit un rectangle simple (comportant une seule ligne)
+   * Construit une chaine de caractères reprétant un rectanglê encadrant le
+   * titre de l'application
    * 
-   * @param texte     Le texte a inclure dans un rectangle
-   * @param largeur   La largeur du rectangle
-   * @param estCentre Si le texte doit être centré
-   * @return Le texte encadré dans un rectangle
+   * @param titre Le titre de l'application
+   * @return Une chaine de caractère représentant un rectangle das lequel se
+   *         trouve le titre spécifié
    */
-  public static String construireRectangleSimple(final String texte, final int largeur, final boolean estCentre) {
-    final StringBuilder rectangle = new StringBuilder();
-    final StringBuilder constructeurLigneHorizontale = new StringBuilder();
+  public static String construireRectangleTitre(final String titre) {
+    // Haut et bas
+    String partieHautBas = "";
 
-    for (int i = 0; i < largeur - 2; i++) {
-      constructeurLigneHorizontale.append(LIGNE_HORIZONTALE);
+    for (byte i = 0; i < largeurTitre; ++i) {
+      partieHautBas += '#';
     }
-    final String ligneHorizontale = constructeurLigneHorizontale.toString();
-
-    // Haut
-    rectangle.append(COIN_SUPERIEUR_GAUCHE + ligneHorizontale + COIN_SUPERIEUR_DROIT + '\n');
+    partieHautBas += '\n';
 
     // Centre
-    if (estCentre) {
-      final int nombreInsertions = ((largeur - texte.length()) - 2) / 2;
-      StringBuilder constructeurEspaces = new StringBuilder();
-
-      for (int i = 0; i < nombreInsertions; i++) {
-        constructeurEspaces.append(' ');
-      }
-      String espaces = constructeurEspaces.toString();
-
-      // Nombre d'espaces insuffisants dans certains cas
-      if (nombreInsertions % 2 == 0) {
-        rectangle.append(LIGNE_VERTICALE + espaces + texte + espaces + ' ' + LIGNE_VERTICALE + '\n');
-      } else {
-        rectangle.append(LIGNE_VERTICALE + espaces + texte + espaces + LIGNE_VERTICALE + '\n');
-      }
-    } else {
-      String commencementCentre = (LIGNE_VERTICALE + " " + texte);
-      final int nombreInsertions = largeur - commencementCentre.length() - 1;
-      for (int i = 0; i < nombreInsertions; i++) {
-        commencementCentre += " ";
-      }
-      rectangle.append(commencementCentre + LIGNE_VERTICALE + '\n');
+    String decorateurCotes = "";
+    for (byte i = 0; i < 4; ++i) {
+      decorateurCotes += '#';
     }
-    // Bas
-    rectangle.append(COIN_INFERIEUR_GAUCHE + ligneHorizontale + COIN_INFERIEUR_DROIT);
-    return rectangle.toString();
+
+    int nombreEspacesCentre = (largeurTitre - (decorateurCotes.length() * 2) - titre.length()) / 2;
+    System.out.println(nombreEspacesCentre);
+    String espacesCentres = "";
+
+    for (byte i = 0; i < nombreEspacesCentre; ++i) {
+      espacesCentres += ' ';
+    }
+
+    String centre = " ";
+
+    if (largeurTitre - (titre.length() + nombreEspacesCentre * 2 + decorateurCotes.length() * 2) != 0) {
+      centre = decorateurCotes + espacesCentres + titre + ' ' + espacesCentres + decorateurCotes + '\n';
+    } else {
+      centre = decorateurCotes + espacesCentres + titre + espacesCentres + decorateurCotes + '\n';
+    }
+
+    final String rectangle = partieHautBas + centre + partieHautBas;
+    return rectangle;
   }
 
   /**
-   * Contruit un rectangle avec plusieurs lignes
    * 
-   * @param lignes  Les lignes du rectangle
-   * @param largeur La largeur du rectangle
-   * @return Un rectangle à plusieurs lignes enclosant du texte
+   * @param optionsMenu
+   * @return
    */
-  public static String construireRectangleMultiplesLignes(final String[] lignes, final int largeur) {
-    final StringBuilder rectangle = new StringBuilder();
-    final StringBuilder constructeurLigneHorizontale = new StringBuilder();
+  public static String construireRectangleMenu(String[] optionsMenu) {
+    final String titreMenu = "Menu";
 
-    for (int i = 0; i < largeur - 2; i++) {
-      constructeurLigneHorizontale.append(LIGNE_HORIZONTALE);
-    }
-    final String ligneHorizontale = constructeurLigneHorizontale.toString();
+    String menuPartieGauche = ":-";
+    String menuPartieDroite = "-:";
 
-    // Haut
-    rectangle.append(COIN_SUPERIEUR_GAUCHE + ligneHorizontale + COIN_SUPERIEUR_DROIT + '\n');
+    String centreEnTete = menuPartieGauche + titreMenu + menuPartieDroite;
+    int nombreInsertions = longeurEnTeteMenu - centreEnTete.length();
 
-    // Centre
-    for (String ligne : lignes) {
-      String commencementCentre = (LIGNE_VERTICALE + " " + ligne);
-      final int nombreInsertions = largeur - commencementCentre.length() - 1;
-      for (int i = 0; i < nombreInsertions; i++) {
-        commencementCentre += " ";
-      }
-      rectangle.append(commencementCentre + LIGNE_VERTICALE + '\n');
+    String rembourage = "";
+    for (byte i = 0; i < nombreInsertions / 2; ++i) {
+      rembourage += '#';
     }
 
-    // Bas
-    rectangle.append(COIN_INFERIEUR_GAUCHE + ligneHorizontale + COIN_INFERIEUR_DROIT);
-    return rectangle.toString();
+    String enTeteMenu = "";
+    if (longeurEnTeteMenu - (centreEnTete.length() + rembourage.length() * 2) != 0) {
+      enTeteMenu = rembourage + '#' + centreEnTete + rembourage;
+    } else {
+      enTeteMenu = rembourage + centreEnTete + rembourage;
+    }
+
+    byte nombreEspaces = 5;
+    String espacesOptionsMenu = ""; 
+
+    for(byte i = 0; i < nombreEspaces; ++i){
+      espacesOptionsMenu += ' '; 
+    }
+
+    byte compteur = 1; 
+    String chaineOptionsMenu = "";
+
+    for (String option : optionsMenu) {
+      chaineOptionsMenu += compteur + "." + espacesOptionsMenu + option + '\n';
+      compteur += 1; 
+    }
+
+    final String chaineMenu = '\n' + enTeteMenu + '\n' + chaineOptionsMenu + '\n';
+    return chaineMenu;
   }
 }

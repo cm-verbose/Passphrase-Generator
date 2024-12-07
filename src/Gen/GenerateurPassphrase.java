@@ -1,13 +1,17 @@
 package Gen;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Random;
 import java.util.Scanner;
 
+/**
+ * Une generateur de passhphrases utilisé afin de gèrer des actions
+ * liées aux options de menu.
+ */
 public class GenerateurPassphrase {
   /*
    * 1 tableau = (200 * taille de null (valeur par défault d'un non-initialisé
@@ -36,6 +40,11 @@ public class GenerateurPassphrase {
   private String[] tableauSujets;
   private String[] tableauVerbes;
 
+  /*
+   * La situation assume que nous avons 200 lignes dans nos tableaux.
+   */
+  private static int LONGEUR_TABLEAU = 200;
+
   static Passphrase[] tableauPassphrases;
 
   public GenerateurPassphrase() {
@@ -52,9 +61,12 @@ public class GenerateurPassphrase {
   }
 
   /**
-   * Lit le contenu d'une liste de mots situé à .src/Docs/...
+   * Lit le contenu d'une liste de mots situé à .src/Docs/
    * 
-   * @param nomFichier Le nom du fichier
+   * @param nomFichier Le nom du fichier de liste de mots à lire
+   * @return Un tableau de taile 200 (la situation assume que nous avons 200
+   *         lignes) contenant les expressions de la liste spécifiée par le nom de
+   *         fichier
    */
   private static String[] lireListe(final String nomFichier) {
     final String chemin = "./src/Docs/" + nomFichier + ".txt";
@@ -65,11 +77,12 @@ public class GenerateurPassphrase {
       Scanner lecteur = new Scanner(fichierListeDeMots);
 
       /*
-       * La situation assume que dans chaque fichier, nous avons moins que 32 767
-       * lignes pour chaque fichier (nous avons 200 lignes)
+       * La situation assume qu'il a 200 lignes dans nos fichiers. Utiliser le type
+       * short consomme ainsi le moins de mémoire tout en ayant assez d'espace pour
+       * stocker 200 lignes (nous avons moins de 32 767 lignes)
        */
       short compteur = 0;
-      listeTableau = new String[200];
+      listeTableau = new String[LONGEUR_TABLEAU];
 
       while (lecteur.hasNextLine()) {
         listeTableau[compteur] = lecteur.nextLine();
@@ -78,8 +91,17 @@ public class GenerateurPassphrase {
       lecteur.close();
       return listeTableau;
 
-    } catch (FileNotFoundException erreur) {
-      System.out.println(String.format("Fichier au chemin \"%s\" indisponible", chemin));
+      /*
+       * Les erreurs FileNotFoundException et SecurityException sont les erreurs
+       * présentes dans le constructeur de la classe FileInputStream sous sa forme de
+       * surchage avec un paramètre de type File, qui est utilisé dans ce cas. Pour la
+       * syntaxe par rapport au catch à multiples exceptions, cette fonctionalité est
+       * disponible depuis Java SE7.
+       * Voir :
+       * https://docs.oracle.com/javase/7/docs/technotes/guides/language/catch-multiple.html
+       */
+    } catch (FileNotFoundException | SecurityException erreur) {
+      System.out.println(String.format("Fichier au chemin \"%s\" indisponible ou non-existant", chemin));
       String[] vide = {};
       return vide;
     }
@@ -87,8 +109,18 @@ public class GenerateurPassphrase {
 
   /**
    * Génère des mots de passe
+   * 
+   * @param nombreDePhrases Le nombre de phrases à générer
    */
   public void genererPassphrase(final int nombreDePhrases) {
+    /*
+     * On ne devrait pas générer un nombre négatif ou nul de phrases
+     */
+    if (nombreDePhrases <= 0) {
+      System.out.println("Saisie invalide : Veuillez saisir un nombre supérieur à 0");
+      return;
+    }
+
     tableauPassphrases = new Passphrase[nombreDePhrases];
     Random generateurNombreAleatoire = new Random();
 
@@ -125,8 +157,12 @@ public class GenerateurPassphrase {
        * => 12 bytes
        */
       for (byte j = 0; j < 3; ++j) {
-        // Les listes ont 200 éléments et sont immuables
-        int nombreAleatoire = generateurNombreAleatoire.nextInt(199);
+        /*
+         * Les listes ont 200 éléments et la situation assume qu'ils sont immuables.
+         * Ainsi on peut générer un nombre entre 0 et 199 (ou 200 -1) afin d'avoir
+         * un index aléatoire pour la liste
+         */
+        int nombreAleatoire = generateurNombreAleatoire.nextInt(LONGEUR_TABLEAU - 1);
         switch (j) {
           case 0: {
             mot += tableauSujets[nombreAleatoire] + " ";
@@ -157,64 +193,57 @@ public class GenerateurPassphrase {
       boolean contientPhrase = false;
 
       /* Vérifier que la passphrase n'existe pas */
-      if (i != 0) {
-        for (Passphrase phrase : tableauPassphrases) {
-          /**
-           * Puisque notre tableau est initialisé à une longeur
-           * spécifique, certaines valeurs sont null. Ainsi, lorsque
-           * nous atteignons null, nous pouvons quitter la boucle
-           * d'avance, puisque le reste des valeurs sont non-initialisées
-           */
-          if (phrase == null)
-            break;
+      for (Passphrase phrase : tableauPassphrases) {
+        /**
+         * Puisque notre tableau est initialisé à une longeur
+         * spécifique, certaines valeurs sont null. Ainsi, lorsque
+         * nous atteignons null, nous pouvons quitter la boucle
+         * d'avance, puisque le reste des valeurs sont non-initialisées
+         */
+        if (phrase == null)
+          break;
 
-          if (phrase.getPassPhrase().equals(nouvellePhrase.getPassPhrase())) {
-            System.out.println("Passphrase déjà existante");
-            contientPhrase = true;
-          }
+        if (phrase.getPassPhrase().equals(nouvellePhrase.getPassPhrase())) {
+          System.out.println("Passphrase déjà existante");
+          contientPhrase = true;
         }
       }
 
       /**
-       * Clause de garde: (on n'incrémente pas i) jusqu'à temps que l'on génère
-       * une phrase qui n'existe pas déjà
+       * Clause de garde (ou garde): (on n'incrémente pas i) jusqu'à temps que l'on
+       * génère une phrase qui n'existe pas déjà
        */
-      if (!contientPhrase)
+      if (contientPhrase)
         continue;
       tableauPassphrases[i] = nouvellePhrase;
       ++i;
     }
-    System.out.println("Génération de " + nombreDePhrases + " passphrases terminé");
+    System.out.println("Génération de " + nombreDePhrases + " passphrases terminée");
   }
 
   /**
    * Crée un nouveau fichier de sauvegarde à ./src/Docs/sortie.txt
-   * et enregistre les passphares générées. 
+   * et enregistre les passphares générées.
    */
   public void sauverPassphrase() {
     final String chemin = "./src/Docs/sortie.txt";
-    File fichierSauvegarde = new File(chemin);
-
-    try {
-      fichierSauvegarde.createNewFile();
-    } catch (IOException erreur) {
-      System.err.println("Le fichier n'a pas pu été créé");
+    if (tableauPassphrases == null || tableauPassphrases.length == 0) {
+      System.out
+          .println("Il faut que vous génériez au moins une passphrase avant de pouvoir enregistrer vos passphrases");
+      return;
     }
 
     try {
-      FileWriter redacteur = new FileWriter(chemin);
-      if (tableauPassphrases.length == 0) {
-        System.out.println("Vous devez générer au moins une phrase");
-        redacteur.close();
-        return;
-      }
+      FileOutputStream fichier = new FileOutputStream(chemin);
+      PrintStream redacteur = new PrintStream(fichier);
 
       for (Passphrase phrase : tableauPassphrases) {
-        redacteur.write(phrase.toString() + "\n");
+        redacteur.println(phrase.toString());
       }
       redacteur.close();
+      System.out.println("Enregistrement des passphrases dans le fichier sortie.txt");
     } catch (IOException erreur) {
-      System.err.println("On a pas pu écrire à ce fichier");
+      System.out.println("Nous ne pouvons pas créer le fichier au chemin " + chemin);
     }
   }
 
@@ -234,7 +263,7 @@ public class GenerateurPassphrase {
         System.out.println(ligne);
       }
       lecteur.close();
-    } catch (FileNotFoundException erreur) {
+    } catch (FileNotFoundException | SecurityException erreur) {
       System.out.println(String.format("Fichier au chemin \"%s\" indisponible", chemin));
     }
   }
@@ -247,11 +276,24 @@ public class GenerateurPassphrase {
    *         trouvée)
    */
   public String forceBrute(String hash) {
+    String hashSansEspaces = hash.trim();
+    /*
+     * La longeur du hash M5D générée par la class MD5Generator est toujours de 32
+     * caractères. Ainsi toute chaine qui a plus ou moins de caractères est invalide
+     * automatiquement, puisque le générateur ne peut jamais générer un hash qui n'a
+     * pas une longeur de 32 caractères.
+     */
+    if (hashSansEspaces.length() != 32) {
+      System.out.println(
+          "Saisie invalide : Le hash MD5 a cracker n'est pas d'une longeur de 32 caractères veuillez réessayer");
+      return "";
+    }
+
     int compteur = 1;
     boolean trouve = false;
 
     String phraseTrouve = new String();
-    hash = hash.trim();
+    hash = hashSansEspaces;
 
     /*
      * On utilise une étiquette nommée principale pour identifier la boucle
@@ -267,16 +309,20 @@ public class GenerateurPassphrase {
           if (hash.equals(phrase.getHash())) {
             phraseTrouve = message;
             trouve = true;
+
+            /**
+             * Ici, on utilise break pour éviter de continuer d'itérer. Bien qu'on pourrait
+             * aussi utiliser une boule do-while ou while avec avec la comparaison du
+             * booléen nommé trouvé, le code suivant est plus simple à lire.
+             */
             break principale;
           }
-          compteur += 1;
+          ++compteur;
         }
       }
     }
 
-    if (!trouve) {
-      System.out.println("La passphrase ne peut pas être trouvée");
-    } else {
+    if (trouve) {
       /**
        * Puisqu'une grande majorité des phrases à trouver par force brute prennent
        * plus de 1 000 voir 1,000 000 essais, la plupart du temps, le formattage sert
@@ -284,6 +330,8 @@ public class GenerateurPassphrase {
        */
       String message = String.format("Phrase trouvée après %,3d essais", compteur);
       System.out.println(message);
+    } else {
+      System.out.println("La passphrase ne peut être trouvée");
     }
     return phraseTrouve;
   }

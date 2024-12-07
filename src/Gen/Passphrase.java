@@ -3,7 +3,8 @@ package Gen;
 import Externe.MD5Generator;
 
 /**
- * Représente une Passphrase
+ * Représente une Passphrase, une phrase utilisée en tant que mot de 
+ * passe composée de mots. 
  */
 public class Passphrase {
   final String hash;

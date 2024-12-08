@@ -43,7 +43,7 @@ public class GenerateurPassphrase {
   /*
    * La situation assume que nous avons 200 lignes dans nos tableaux.
    */
-  private static int LONGEUR_TABLEAU = 200;
+  public static int LONGEUR_TABLEAU = 200;
 
   static Passphrase[] tableauPassphrases;
 
@@ -285,7 +285,7 @@ public class GenerateurPassphrase {
      */
     if (hashSansEspaces.length() != 32) {
       System.out.println(
-          "Saisie invalide : Le hash MD5 a cracker n'est pas d'une longeur de 32 caractères veuillez réessayer");
+          "Saisie invalide : Le hash MD5 à cracker n'est pas d'une longueur de 32 caractères");
       return "";
     }
 

@@ -40,6 +40,14 @@ public class Generateur {
           System.out.println("Combien de phrases voulez-vous générer ?");
           try {
             int nombreDePhrases = lecteur.nextInt();
+            int longeurListes = GenerateurPassphrase.LONGEUR_TABLEAU;
+
+            int phrasesMax = longeurListes * longeurListes * longeurListes;
+            if (nombreDePhrases > phrasesMax) {
+              System.out.println("Saisie invalide: veuillez saisir un nombre de phrases inférieur à " + phrasesMax);
+              break;
+            }
+
             generateur.genererPassphrase(nombreDePhrases);
           } catch (InputMismatchException erreur) {
             lecteur.nextLine();
@@ -72,7 +80,9 @@ public class Generateur {
           break;
 
         default: {
-          System.out.println("Saisie invalide : Veuillez saisir un nombre entre 1 et 5");
+          if (choixUtilisateur != 5) {
+            System.out.println("Saisie invalide : Veuillez saisir un nombre entre 1 et 5");
+          }
           continue;
         }
       }
@@ -103,7 +113,7 @@ public class Generateur {
         "Quitter",
     };
 
-    String menu = Graphiques.construireRectangleMenu(optionsMenu); 
+    String menu = Graphiques.construireRectangleMenu(optionsMenu);
     System.out.println(menu);
   }
 }

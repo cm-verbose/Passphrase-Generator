@@ -32,7 +32,6 @@ public class Graphiques {
     }
 
     int nombreEspacesCentre = (largeurTitre - (decorateurCotes.length() * 2) - titre.length()) / 2;
-    System.out.println(nombreEspacesCentre);
     String espacesCentres = "";
 
     for (byte i = 0; i < nombreEspacesCentre; ++i) {
@@ -78,18 +77,18 @@ public class Graphiques {
     }
 
     byte nombreEspaces = 5;
-    String espacesOptionsMenu = ""; 
+    String espacesOptionsMenu = "";
 
-    for(byte i = 0; i < nombreEspaces; ++i){
-      espacesOptionsMenu += ' '; 
+    for (byte i = 0; i < nombreEspaces; ++i) {
+      espacesOptionsMenu += ' ';
     }
 
-    byte compteur = 1; 
+    byte compteur = 1;
     String chaineOptionsMenu = "";
 
     for (String option : optionsMenu) {
       chaineOptionsMenu += compteur + "." + espacesOptionsMenu + option + '\n';
-      compteur += 1; 
+      compteur += 1;
     }
 
     final String chaineMenu = '\n' + enTeteMenu + '\n' + chaineOptionsMenu + '\n';
